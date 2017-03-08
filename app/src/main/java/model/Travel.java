@@ -4,6 +4,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -52,7 +53,8 @@ public class Travel implements Parcelable{
         this.user_id = user_id;
         this.title = title;
         id = UUID.randomUUID().toString().replaceAll("-", "");
-        time = DateFormat.getDateTimeInstance().format(new Date());
+        DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        time = format.format(new Date());
     }
 
     public Travel(String id, String user_id, String title, String time) {

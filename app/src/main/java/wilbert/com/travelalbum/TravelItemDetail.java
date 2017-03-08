@@ -1,5 +1,6 @@
 package wilbert.com.travelalbum;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
@@ -57,6 +58,7 @@ public class TravelItemDetail extends AppCompatActivity {
                         photoUri.toString());
                 String sql = travelItem.getTravelItemInsertSql();
                 dataBaseManager.execSQL(sql);
+                finish();
                 break;
         }
         return super.onOptionsItemSelected(item);

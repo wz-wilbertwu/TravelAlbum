@@ -3,6 +3,7 @@ package model;
 import android.util.Log;
 
 import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.UUID;
 
@@ -22,7 +23,8 @@ public class TravelItem {
         this.description = description;
         this.image = image;
         id = UUID.randomUUID().toString().replaceAll("-", "");
-        time = DateFormat.getDateTimeInstance().format(new Date());
+        DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        time = format.format(new Date());
     }
     public TravelItem(String id, String travel_id, String description, String image, String time) {
         this.travel_id = travel_id;
