@@ -23,6 +23,7 @@ public class TravelItemDetail extends AppCompatActivity {
     private EditText descriptionEditText;
     private DataBaseManager dataBaseManager;
     private String travelId;
+    private String imageString;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -40,6 +41,8 @@ public class TravelItemDetail extends AppCompatActivity {
         float px = 200 * (getResources().getDisplayMetrics().densityDpi / 160f);
         Bitmap bitmap = BitmapUti.getBitmapFromUri(this, photoUri, px);
         imageView.setImageBitmap(bitmap);
+
+        imageString = getIntent().getStringExtra(TravelDetail.IMG);
     }
 
     @Override
@@ -55,7 +58,7 @@ public class TravelItemDetail extends AppCompatActivity {
             case R.id.actionConfirm:
                 /*插入*/
                 TravelItem travelItem = new TravelItem(travelId, descriptionEditText.getText().toString(),
-                        photoUri.toString());
+                        imageString);
                 String sql = travelItem.getTravelItemInsertSql();
                 dataBaseManager.execSQL(sql);
                 finish();

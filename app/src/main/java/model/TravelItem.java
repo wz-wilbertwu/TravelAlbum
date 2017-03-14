@@ -15,6 +15,27 @@ import util.LogUti;
 public class TravelItem {
     private String id;
     private String travel_id;
+
+    public String getImage() {
+        return image;
+    }
+
+    public String getTime() {
+        return time;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public String getTravel_id() {
+        return travel_id;
+    }
+
+    public String getId() {
+        return id;
+    }
+
     private String description;
     private String image;
     private String time;
@@ -35,9 +56,9 @@ public class TravelItem {
     }
 
     public String getTravelItemInsertSql() {
-        String sql = "INSERT INTO tb_travel_item (id, travel_id, description, time) " +
-                "VALUES ('%s', '%s', '%s', '%s')";
-        String result = String.format(sql, id, travel_id, description, time);
+        String sql = "INSERT INTO tb_travel_item (id, travel_id, description, time, image) " +
+                "VALUES ('%s', '%s', '%s', '%s', '%s')";
+        String result = String.format(sql, id, travel_id, description, time, image);
         LogUti.d("insert travel item:" + result);
         return result;
     }

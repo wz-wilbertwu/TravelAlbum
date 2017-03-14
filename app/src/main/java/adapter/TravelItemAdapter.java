@@ -1,14 +1,18 @@
 package adapter;
 
+import android.content.Context;
+import android.graphics.Bitmap;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.List;
 
 import model.TravelItem;
+import util.BitmapUti;
 import wilbert.com.travelalbum.R;
 
 /**
@@ -17,12 +21,14 @@ import wilbert.com.travelalbum.R;
 public class TravelItemAdapter extends RecyclerView.Adapter<TravelItemAdapter.ViewHolder>{
     private IOnItemClick iOnItemClick;
     private List travelItemList;
+    private Context context;
     public void setDataSet(List newDataSet) {
         this.travelItemList = newDataSet;
     }
-    public TravelItemAdapter(List travelItemList, IOnItemClick iOnItemClick) {
+    public TravelItemAdapter(Context context, List travelItemList, IOnItemClick iOnItemClick) {
         this.travelItemList = travelItemList;
         this.iOnItemClick = iOnItemClick;
+        this.context = context;
     }
 
 
@@ -46,6 +52,10 @@ public class TravelItemAdapter extends RecyclerView.Adapter<TravelItemAdapter.Vi
     public void onBindViewHolder(ViewHolder holder, int position) {
         TravelItem item = (TravelItem) travelItemList.get(position);
         holder.textView.setText(item.toString());
+        float px = 200 * (context.getResources().getDisplayMetrics().densityDpi / 160f);
+        Bitmap bitmap = BitmapUti.getBitmapFromUri(context,
+                BitmapUti.getCommonUri(item.getImage()), px);
+        holder.imageView.setImageBitmap(bitmap);
     }
 
     @Override
@@ -60,10 +70,12 @@ public class TravelItemAdapter extends RecyclerView.Adapter<TravelItemAdapter.Vi
     public static class ViewHolder extends RecyclerView.ViewHolder {
         public View view;
         public TextView textView;
+        public ImageView imageView;
         public ViewHolder(View itemView) {
             super(itemView);
             this.view = itemView;
             this.textView = (TextView)itemView.findViewById(R.id.itemTextView);
+            this.imageView = (ImageView)itemView.findViewById(R.id.itemImageView);
         }
     }
 }

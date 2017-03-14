@@ -21,6 +21,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 import adapter.TravelAdapter;
 import adapter.TravelItemAdapter;
@@ -46,6 +47,7 @@ public class TravelDetail extends AppCompatActivity {
     private List travelItemList;
     private File mediaStorageDir;
     private Uri photoURI;
+    private String imageString = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,7 +62,7 @@ public class TravelDetail extends AppCompatActivity {
         recyclerView = (RecyclerView)findViewById(R.id.travelItemRecyclerView);
         recyclerView.setLayoutManager(layoutManager);
 
-        travelItemAdapter = new TravelItemAdapter(readTravelItemListFromSql(), iOnItemClick);
+        travelItemAdapter = new TravelItemAdapter(this, readTravelItemListFromSql(), iOnItemClick);
         recyclerView.setAdapter(travelItemAdapter);
 
         FloatingActionButton btn = (FloatingActionButton)findViewById(R.id.addTravelItemBtn);
@@ -72,6 +74,12 @@ public class TravelDetail extends AppCompatActivity {
         });
     }
 
+    @Override
+    protected void onResume() {
+        travelItemAdapter = new TravelItemAdapter(this, readTravelItemListFromSql(), iOnItemClick);
+        recyclerView.setAdapter(travelItemAdapter);
+        super.onResume();
+    }
 
     private List readTravelItemListFromSql() {
         travelItemList = new ArrayList();
@@ -93,6 +101,7 @@ public class TravelDetail extends AppCompatActivity {
     public static final String KEY = "key";
     public static final String PHOTO_URI_KEY = "photo_uri_key";
     public static final String TRAVEL_ID = "travel_id";
+    public static final String IMG = "img";
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         String result = "%d\n%d\n%s";
@@ -103,6 +112,7 @@ public class TravelDetail extends AppCompatActivity {
             bundle.putSerializable(PHOTO_URI_KEY, photoString);
             Intent intent = new Intent(this, TravelItemDetail.class);
             intent.putExtra(TRAVEL_ID, travel.getId());
+            intent.putExtra(IMG, imageString);
             intent.putExtras(bundle);
             startActivity(intent);
         }
@@ -133,10 +143,11 @@ public class TravelDetail extends AppCompatActivity {
                 return null;
             }
         }
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String timeStamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
         File mediaFile;
+        imageString = UUID.randomUUID().toString().replaceAll("-", "") + "-" + timeStamp  + ".jpg";
         mediaFile = new File(mediaStorageDir.getPath() + File.separator +
-                "IMG_"+ timeStamp + ".jpg");
+                imageString);
         return mediaFile;
     }
 }
