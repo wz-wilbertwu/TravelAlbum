@@ -5,12 +5,17 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Canvas;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.view.menu.MenuAdapter;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.OrientationHelper;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.StaggeredGridLayoutManager;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -61,9 +66,9 @@ public class MainActivity extends AppCompatActivity {
         public void onResponse(String response) {
             Travel travel = new Travel(response);
             if (travel != null && travel.getStatus() != null && travel.getStatus().equals("succ")) {
-                LogUti.d("上传成功：" + response);
+                LogUti.d("操作成功：" + response);
             } else {
-                LogUti.d("上传失败：" + response);
+                LogUti.d("操作失败：" + response);
             }
         }
     };
@@ -93,6 +98,9 @@ public class MainActivity extends AppCompatActivity {
 
         travelAdapter = new TravelAdapter(readTravelListFromSql(), iOnItemClick);
         recyclerView.setAdapter(travelAdapter);
+
+        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(callback);
+        itemTouchHelper.attachToRecyclerView(recyclerView);
 
         requestQueue = Volley.newRequestQueue(this);
 
@@ -152,4 +160,38 @@ public class MainActivity extends AppCompatActivity {
         }
         return travelList;
     }
+
+    ItemTouchHelper.Callback callback = new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP|
+                            ItemTouchHelper.DOWN,ItemTouchHelper.RIGHT) {
+        @Override
+        public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+            return false;
+        }
+
+        @Override
+        public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
+            int position = viewHolder.getAdapterPosition();
+            Travel travel = (Travel) travelAdapter.getTravelList().get(position);
+            String sql = travel.getTravelRemoveSql();
+            database.execSQL(sql);
+            travelAdapter.getTravelList().remove(position);
+            travelAdapter.notifyItemRemoved(position);
+
+            StringRequest stringRequest = new StringRequest(Request.Method.GET,
+                    CustomConstans.url + "Travel/delete/" + travel.getId(),responseListener,
+                    errorListener);
+            requestQueue.add(stringRequest);
+        }
+
+        @Override
+        public void onChildDraw(Canvas c, RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
+            super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
+            if(actionState == ItemTouchHelper.ACTION_STATE_SWIPE) {
+                //滑动时改变Item的透明度
+                final float alpha = 1 - Math.abs(dX) / (float)viewHolder.itemView.getWidth();
+                viewHolder.itemView.setAlpha(alpha);
+                viewHolder.itemView.setTranslationX(dX);
+            }
+        }
+    };
 }
