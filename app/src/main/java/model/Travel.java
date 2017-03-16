@@ -3,11 +3,16 @@ package model;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import util.LogUti;
@@ -29,6 +34,7 @@ public class Travel implements Parcelable{
         id = in.readString();
         title = in.readString();
         time = in.readString();
+        status = in.readString();
     }
 
     public static final Creator<Travel> CREATOR = new Creator<Travel>() {
@@ -43,12 +49,21 @@ public class Travel implements Parcelable{
         }
     };
 
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
     public String getTitle() {
         return title;
     }
 
     private String title;
     private String time;
+    private String status;
     public Travel(String user_id, String title) {
         this.user_id = user_id;
         this.title = title;
@@ -62,6 +77,19 @@ public class Travel implements Parcelable{
         this.user_id = user_id;
         this.title = title;
         this.time = time;
+    }
+
+    public Travel(String jsonString) {
+        try {
+            JSONObject jsonObject = new JSONObject(jsonString);
+            id = jsonObject.getString("id");
+            user_id = jsonObject.getString("userId");
+            title = jsonObject.getString("title");
+            time = jsonObject.getString("time");
+            status = jsonObject.getString("status");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
     public  String getTravelInsertSql() {
         String sql = "INSERT INTO tb_travel (id, user_id, time, title) " +
@@ -111,5 +139,15 @@ public class Travel implements Parcelable{
         dest.writeString(id);
         dest.writeString(title);
         dest.writeString(time);
+        dest.writeString(status);
+    }
+
+    public Map getMap() {
+        Map map = new HashMap<String, String>();
+        map.put("userId", user_id == null ? "":user_id);
+        map.put("id", id == null ? "":id);
+        map.put("title", title == null ? "":title);
+        map.put("time", time == null ? "":time);
+        return map;
     }
 }

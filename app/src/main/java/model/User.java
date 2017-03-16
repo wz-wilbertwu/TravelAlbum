@@ -3,6 +3,9 @@ package model;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import util.CustomConstans;
 import util.LogUti;
 
@@ -13,6 +16,16 @@ public class User {
     private String name;
     private String password;
     private String id;
+    private String status;
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
     public User(String name, String password) {
         this.name = name;
         this.password = password;
@@ -21,6 +34,17 @@ public class User {
         this.name = name;
         this.password = password;
         this.id = id;
+    }
+
+    public User(JSONObject jsonObject) {
+        try {
+            this.name = jsonObject.getString("name");
+            this.password = jsonObject.getString("password");
+            this.id = jsonObject.getString("id");
+            this.status = jsonObject.getString("status");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     public String getLoginUrl() {
@@ -36,18 +60,29 @@ public class User {
         return result;
     }
     public static User getUserFromJson(String json) {
+        JSONObject jsonObject = null;
+        User user = null;
         try {
-            JSONObject jsonObject = new JSONObject(json);
-            User user = new User(jsonObject.getString("name"), jsonObject.getString("password"),
-                    jsonObject.getString("id"));
-            return user;
+            jsonObject = new JSONObject(json);
+            user = new User(jsonObject);
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        return null;
+        return user;
     }
 
     public String getId() {
         return id;
     }
+
+    public Map getMap(){
+        Map map = new HashMap<String,String>();
+        map.put("name", name == null ? "" : name);
+        map.put("password", password == null ? "" : password);
+        map.put("id", id == null ? "": id);
+        map.put("status", status == null ? "" : status);
+        return map;
+    }
+
+
 }

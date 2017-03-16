@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -21,6 +22,7 @@ import com.android.volley.toolbox.Volley;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.PipedOutputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -74,60 +76,67 @@ public class LoginActivity extends AppCompatActivity {
     };
 
     private void LoginUser(final String name, final String password) {
-        User user = new User(name, password);
-        JsonObjectRequest loginRequest = new JsonObjectRequest(Request.Method.GET, user.getLoginUrl(),
-                null, new Response.Listener<JSONObject>() {
-            @Override
-            public void onResponse(JSONObject response) {
-                try {
-                    if (response.getString("result").equals("success")) {
-                        LogUti.d("login success:");
-                        LogUti.d(response.toString());
-                        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                        intent.putExtra(USERMESSAGE, response.toString());
-                        startActivity(intent);
-                    } else {
-                        LogUti.d("login fail");
+        final User user = new User(name, password);
+        StringRequest stringRequest = new StringRequest(Request.Method.POST,
+                CustomConstans.url + "User/login",
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        User user1 = User.getUserFromJson(response);
+                        if (user1.getStatus() != null && user1.getStatus().equals("succ")) {
+                            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                            intent.putExtra(USERMESSAGE, response);
+                            startActivity(intent);
+                        } else {
+                            Toast.makeText(LoginActivity.this, "密码错误", Toast.LENGTH_SHORT).show();
+                        }
                     }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-        }, new Response.ErrorListener() {
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        LogUti.d(error.toString());
+                        Toast.makeText(LoginActivity.this, "服务器错误", Toast.LENGTH_SHORT).show();
+                    }
+                }) {
             @Override
-            public void onErrorResponse(VolleyError error) {
-
+            protected Map<String, String> getParams() throws AuthFailureError {
+                return user.getMap();
             }
-        }
-        );
-        requestQueue.add(loginRequest);
+        };
+        requestQueue.add(stringRequest);
     }
 
     private void registerUser(String name, String password) {
-        User user = new User(name, password);
-        JsonObjectRequest loginRequest = new JsonObjectRequest(Request.Method.GET, user.getRegisterUrl(),
-                null, new Response.Listener<JSONObject>() {
-            @Override
-            public void onResponse(JSONObject response) {
-                try {
-                    if (response.getString("result").equals("success")) {
-                        LogUti.d("register success:");
-                        LogUti.d(response.toString());
-                    } else {
-                        LogUti.d("register fail");
+        final User postUser = new User(name, password);
+        StringRequest stringRequest = new StringRequest(Request.Method.POST, CustomConstans.url +
+                "User/register",
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        User user = User.getUserFromJson(response);
+                        if (user != null && user.getStatus() != null && user.getStatus().equals("succ")) {
+                            Toast.makeText(LoginActivity.this, "注册成功\n请登录", Toast.LENGTH_SHORT)
+                                    .show();
+                        } else {
+                            Toast.makeText(LoginActivity.this, "名称已被使用", Toast.LENGTH_SHORT)
+                                    .show();
+                        }
                     }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-        }, new Response.ErrorListener() {
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        LogUti.d(error.toString());
+                        Toast.makeText(LoginActivity.this, "服务器错误", Toast.LENGTH_SHORT).show();
+                    }
+                }) {
             @Override
-            public void onErrorResponse(VolleyError error) {
-
+            protected Map<String, String> getParams() throws AuthFailureError {
+                return postUser.getMap();
             }
-        }
-        );
-        requestQueue.add(loginRequest);
+        };
+        requestQueue.add(stringRequest);
     }
 
     private boolean checkValid() {

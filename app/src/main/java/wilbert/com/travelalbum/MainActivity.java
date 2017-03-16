@@ -15,13 +15,23 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import adapter.TravelAdapter;
 import database.DataBaseHelper;
 import model.Travel;
 import model.User;
+import util.CustomConstans;
 import util.LogUti;
 
 public class MainActivity extends AppCompatActivity {
@@ -45,7 +55,26 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
         }
     };
+
+    Response.Listener<String> responseListener = new Response.Listener<String>() {
+        @Override
+        public void onResponse(String response) {
+            Travel travel = new Travel(response);
+            if (travel != null && travel.getStatus() != null && travel.getStatus().equals("succ")) {
+                LogUti.d("上传成功：" + response);
+            } else {
+                LogUti.d("上传失败：" + response);
+            }
+        }
+    };
+    Response.ErrorListener errorListener = new Response.ErrorListener() {
+        @Override
+        public void onErrorResponse(VolleyError error) {
+            LogUti.d("错误" + error.toString());
+        }
+    };
     private ArrayList travelList = new ArrayList();
+    private RequestQueue requestQueue;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,7 +82,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         String userMessage = getIntent().getStringExtra(LoginActivity.USERMESSAGE);
         LogUti.d("userMessage:" + userMessage);
-        /*user = User.getUserFromJson(userMessage);*/
+        user = User.getUserFromJson(userMessage);
         DataBaseHelper helper = new DataBaseHelper(this, "TravelAlbum.db", null, 2);
         database = helper.getWritableDatabase();
 
@@ -64,6 +93,8 @@ public class MainActivity extends AppCompatActivity {
 
         travelAdapter = new TravelAdapter(readTravelListFromSql(), iOnItemClick);
         recyclerView.setAdapter(travelAdapter);
+
+        requestQueue = Volley.newRequestQueue(this);
 
         FloatingActionButton btn = (FloatingActionButton)findViewById(R.id.addTravelBtn);
         btn.setOnClickListener(new View.OnClickListener() {
@@ -81,8 +112,19 @@ public class MainActivity extends AppCompatActivity {
                                     Toast.makeText(getApplicationContext(), "标题内容不能为空！" + input, Toast.LENGTH_LONG).show();
                                 }
                                 else {
-                                    Travel travel = new Travel(user.getId(), input);
+                                    final Travel travel = new Travel(user.getId(), input);
                                     database.execSQL(travel.getTravelInsertSql());
+
+                                    StringRequest stringRequest = new StringRequest(Request.Method.POST,
+                                            CustomConstans.url + "Travel/add",responseListener,
+                                            errorListener) {
+                                        @Override
+                                        protected Map<String, String> getParams() throws AuthFailureError {
+                                            return travel.getMap();
+                                        }
+                                    };
+                                    requestQueue.add(stringRequest);
+
                                     Toast.makeText(getApplicationContext(), "旅途开始！" + input, Toast.LENGTH_LONG).show();
                                     travelAdapter.setDataSet(readTravelListFromSql());
                                     travelAdapter.notifyDataSetChanged();
