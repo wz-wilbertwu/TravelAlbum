@@ -185,6 +185,7 @@ public class TravelDetail extends AppCompatActivity {
                 final float alpha = 1 - Math.abs(dX) / (float)viewHolder.itemView.getWidth();
                 viewHolder.itemView.setAlpha(alpha);
                 viewHolder.itemView.setTranslationX(dX);
+
             }
         }
     };
