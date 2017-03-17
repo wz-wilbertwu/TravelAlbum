@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -13,7 +14,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.View;
+
+import com.android.volley.RequestQueue;
+import com.android.volley.toolbox.Volley;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,7 +41,7 @@ public class TravelDetail extends AppCompatActivity {
     private RecyclerView.LayoutManager layoutManager;
     private RecyclerView recyclerView;
     private TravelItemAdapter travelItemAdapter;
-
+    private RequestQueue requestQueue;
     private TravelItemAdapter.IOnItemClick iOnItemClick = new TravelItemAdapter.IOnItemClick() {
         @Override
         public void onItemClick(View view) {
@@ -64,6 +69,11 @@ public class TravelDetail extends AppCompatActivity {
 
         travelItemAdapter = new TravelItemAdapter(this, readTravelItemListFromSql(), iOnItemClick);
         recyclerView.setAdapter(travelItemAdapter);
+
+        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(callback);
+        itemTouchHelper.attachToRecyclerView(recyclerView);
+
+        requestQueue = Volley.newRequestQueue(this);
 
         FloatingActionButton btn = (FloatingActionButton)findViewById(R.id.addTravelItemBtn);
         btn.setOnClickListener(new View.OnClickListener() {
@@ -150,4 +160,32 @@ public class TravelDetail extends AppCompatActivity {
                 imageString);
         return mediaFile;
     }
+
+    ItemTouchHelper.Callback callback = new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP|
+            ItemTouchHelper.DOWN,ItemTouchHelper.RIGHT) {
+        @Override
+        public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+            return false;
+        }
+
+        @Override
+        public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
+            int position = viewHolder.getAdapterPosition();
+            TravelItem travelItem = (TravelItem) travelItemAdapter.getTravelItemList().get(position);
+            String sql = travelItem.getTravelItemRemoveSql();
+            database.execSQL(sql);
+            travelItemAdapter.getTravelItemList().remove(position);
+            travelItemAdapter.notifyItemRemoved(position);
+        }
+        @Override
+        public void onChildDraw(Canvas c, RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
+            super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
+            if(actionState == ItemTouchHelper.ACTION_STATE_SWIPE) {
+                //滑动时改变Item的透明度
+                final float alpha = 1 - Math.abs(dX) / (float)viewHolder.itemView.getWidth();
+                viewHolder.itemView.setAlpha(alpha);
+                viewHolder.itemView.setTranslationX(dX);
+            }
+        }
+    };
 }

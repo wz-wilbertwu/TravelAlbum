@@ -25,6 +25,9 @@ public class TravelItemAdapter extends RecyclerView.Adapter<TravelItemAdapter.Vi
     public void setDataSet(List newDataSet) {
         this.travelItemList = newDataSet;
     }
+    public List getTravelItemList() {
+        return travelItemList;
+    }
     public TravelItemAdapter(Context context, List travelItemList, IOnItemClick iOnItemClick) {
         this.travelItemList = travelItemList;
         this.iOnItemClick = iOnItemClick;

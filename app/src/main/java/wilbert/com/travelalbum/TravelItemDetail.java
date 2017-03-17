@@ -12,9 +12,20 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
+
+import java.util.Map;
+
 import database.DataBaseManager;
 import model.TravelItem;
 import util.BitmapUti;
+import util.CustomConstans;
 import util.LogUti;
 
 public class TravelItemDetail extends AppCompatActivity {
@@ -24,6 +35,25 @@ public class TravelItemDetail extends AppCompatActivity {
     private DataBaseManager dataBaseManager;
     private String travelId;
     private String imageString;
+    private RequestQueue requestQueue;
+
+    private Response.Listener<String> responseListener = new Response.Listener<String>() {
+        @Override
+        public void onResponse(String response) {
+            TravelItem travelItem = new TravelItem(response);
+            if (travelItem != null && travelItem.getStatus() != null && travelItem.getStatus().equals("succ")) {
+                LogUti.d("操作成功：" + response);
+            } else {
+                LogUti.d("操作失败：" + response);
+            }
+        }
+    };
+    private Response.ErrorListener errorListener = new Response.ErrorListener() {
+        @Override
+        public void onErrorResponse(VolleyError error) {
+            LogUti.d("错误" + error.toString());
+        }
+    };
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -43,6 +73,8 @@ public class TravelItemDetail extends AppCompatActivity {
         imageView.setImageBitmap(bitmap);
 
         imageString = getIntent().getStringExtra(TravelDetail.IMG);
+
+        requestQueue = Volley.newRequestQueue(getApplicationContext());
     }
 
     @Override
@@ -57,10 +89,18 @@ public class TravelItemDetail extends AppCompatActivity {
         switch (item.getItemId()) {
             case R.id.actionConfirm:
                 /*插入*/
-                TravelItem travelItem = new TravelItem(travelId, descriptionEditText.getText().toString(),
+                final TravelItem travelItem = new TravelItem(travelId, descriptionEditText.getText().toString(),
                         imageString);
                 String sql = travelItem.getTravelItemInsertSql();
                 dataBaseManager.execSQL(sql);
+                StringRequest stringRequest = new StringRequest(Request.Method.POST,
+                        CustomConstans.url + "TravelItem/add", responseListener, errorListener) {
+                    @Override
+                    protected Map<String, String> getParams() throws AuthFailureError {
+                        return travelItem.getMap();
+                    }
+                };
+                requestQueue.add(stringRequest);
                 finish();
                 break;
         }
