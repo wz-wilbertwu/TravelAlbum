@@ -17,7 +17,11 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.View;
 
+import com.android.volley.Request;
 import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
 import java.io.File;
@@ -33,6 +37,7 @@ import adapter.TravelItemAdapter;
 import database.DataBaseHelper;
 import model.Travel;
 import model.TravelItem;
+import util.CustomConstans;
 import util.LogUti;
 
 public class TravelDetail extends AppCompatActivity {
@@ -176,6 +181,10 @@ public class TravelDetail extends AppCompatActivity {
             database.execSQL(sql);
             travelItemAdapter.getTravelItemList().remove(position);
             travelItemAdapter.notifyItemRemoved(position);
+
+            StringRequest stringRequest = new StringRequest(Request.Method.GET, CustomConstans.url
+                    + "TravelItem/delete/"+travelItem.getId(), responseListener, errorListener);
+            requestQueue.add(stringRequest);
         }
         @Override
         public void onChildDraw(Canvas c, RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
@@ -187,6 +196,24 @@ public class TravelDetail extends AppCompatActivity {
                 viewHolder.itemView.setTranslationX(dX);
 
             }
+        }
+    };
+
+    Response.Listener<String> responseListener = new Response.Listener<String>() {
+        @Override
+        public void onResponse(String response) {
+            TravelItem travelItem = new TravelItem(response);
+            if (travelItem != null && travelItem.getStatus() != null && travelItem.getStatus().equals("succ")) {
+                LogUti.d("操作成功：" + response);
+            } else {
+                LogUti.d("操作失败：" + response);
+            }
+        }
+    };
+    Response.ErrorListener errorListener = new Response.ErrorListener() {
+        @Override
+        public void onErrorResponse(VolleyError error) {
+            LogUti.d("服务器错误：" + error.toString());
         }
     };
 }
