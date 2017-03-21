@@ -158,7 +158,7 @@ public class TravelDetail extends AppCompatActivity {
                 return null;
             }
         }
-        String timeStamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
+        String timeStamp = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss").format(new Date());
         File mediaFile;
         imageString = UUID.randomUUID().toString().replaceAll("-", "") + "-" + timeStamp  + ".jpg";
         mediaFile = new File(mediaStorageDir.getPath() + File.separator +
