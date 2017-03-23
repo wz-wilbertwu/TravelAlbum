@@ -11,11 +11,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.TextView;
 
-import com.android.internal.http.multipart.FilePart;
-import com.android.internal.http.multipart.Part;
-import com.android.internal.http.multipart.StringPart;
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -25,23 +21,19 @@ import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 
 import database.DataBaseManager;
-import model.FileRequest;
 import model.TravelItem;
 import util.AppUtil;
 import util.BitmapUti;
 import util.CustomConstans;
 import util.FileUti;
 import util.LogUti;
-import util.UploadUti;
+import util.NetworkUtil;
 
 public class TravelItemDetail extends AppCompatActivity {
     private Uri photoUri;
@@ -198,7 +190,7 @@ public class TravelItemDetail extends AppCompatActivity {
                     };
                     requestQueue.add(stringRequest);
 
-                    UploadUti.upload(file.getName(), file, new UploadUti.UploadCallback() {
+                    NetworkUtil.upload(file.getName(), file, new NetworkUtil.NetworkCallBack() {
                         @Override
                         public void onResponse(okhttp3.Response response) {
                             LogUti.d("upload response");

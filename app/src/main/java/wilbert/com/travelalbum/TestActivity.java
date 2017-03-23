@@ -8,34 +8,12 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 
-import com.android.internal.http.multipart.FilePart;
-import com.android.internal.http.multipart.Part;
-import com.android.internal.http.multipart.StringPart;
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.Volley;
-
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
 
-import model.FileRequest;
-import model.MultiplePartRequest;
-import okhttp3.Call;
-import okhttp3.Callback;
-import okhttp3.MediaType;
-import okhttp3.MultipartBody;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
+import okhttp3.Response;
 import util.AppUtil;
-import util.CustomConstans;
 import util.LogUti;
-import util.UploadUti;
+import util.NetworkUtil;
 
 public class TestActivity extends AppCompatActivity {
     private File file;
@@ -46,6 +24,8 @@ public class TestActivity extends AppCompatActivity {
         setContentView(R.layout.activity_test);
         Button takeBtn = (Button) findViewById(R.id.takeBtn);
         Button uploadBtn = (Button) findViewById(R.id.uploadBtn);
+        Button downloadBtn = (Button) findViewById(R.id.downloadBtn);
+        downloadBtn.setOnClickListener(clickListener);
         takeBtn.setOnClickListener(clickListener);
         uploadBtn.setOnClickListener(clickListener);
     }
@@ -70,30 +50,15 @@ public class TestActivity extends AppCompatActivity {
                     }
                     break;
                 case R.id.uploadBtn:
-/*                    List<Part> partList = new ArrayList<>();
-                    partList.add(new StringPart("name", file.getName()));
-                    try {
-                        partList.add(new FilePart("file", file));
-                    } catch (FileNotFoundException e) {
-                        e.printStackTrace();
-                    }
-                    RequestQueue requestQueue = Volley.newRequestQueue(TestActivity.this);
-                    String url = CustomConstans.url + "uploadFile";
-                    FileRequest fileRequest = new FileRequest(url, partList.toArray(new Part[partList.size()]),
-                            new Response.Listener<String>() {
-                                @Override
-                                public void onResponse(String response) {
-                                    LogUti.d(response.toString());
-                                }
-                            }, new Response.ErrorListener() {
+                    NetworkUtil.upload(file.getName(), file, null);
+                    break;
+                case R.id.downloadBtn:
+                    NetworkUtil.download("1.jpg", new NetworkUtil.NetworkCallBack() {
                         @Override
-                        public void onErrorResponse(VolleyError error) {
-                            LogUti.d(error.toString());
+                        public void onResponse(Response response) {
+                            LogUti.d(response.toString());
                         }
                     });
-                    requestQueue.add(fileRequest);*/
-                    UploadUti.upload(file.getName(), file, null);
-                    break;
             }
             }
         };
