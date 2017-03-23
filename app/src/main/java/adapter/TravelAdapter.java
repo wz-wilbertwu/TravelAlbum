@@ -18,7 +18,12 @@ public class TravelAdapter extends RecyclerView.Adapter<TravelAdapter.ViewHolder
     public interface IOnItemClick {
         void onItemClick(View view);
     }
+
+    public interface IOnItemLongClick {
+        void onItemLongClick(View view);
+    }
     private IOnItemClick iOnItemClick;
+    private IOnItemLongClick iOnItemLongClick;
     private List travelList;
     public void setDataSet(List newDataSet) {
         this.travelList = newDataSet;
@@ -26,9 +31,10 @@ public class TravelAdapter extends RecyclerView.Adapter<TravelAdapter.ViewHolder
     public List getTravelList() {
         return travelList;
     }
-    public TravelAdapter(List travelList, IOnItemClick iOnItemClick) {
+    public TravelAdapter(List travelList, IOnItemClick iOnItemClick, IOnItemLongClick iOnItemLongClick) {
         this.travelList = travelList;
         this.iOnItemClick = iOnItemClick;
+        this.iOnItemLongClick = iOnItemLongClick;
     }
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -40,6 +46,15 @@ public class TravelAdapter extends RecyclerView.Adapter<TravelAdapter.ViewHolder
                 @Override
                 public void onClick(View v) {
                     iOnItemClick.onItemClick(view);
+                }
+            });
+        }
+        if (iOnItemLongClick != null) {
+            viewHolder.view.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    iOnItemLongClick.onItemLongClick(view);
+                    return false;
                 }
             });
         }

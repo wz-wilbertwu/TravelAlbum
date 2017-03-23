@@ -20,17 +20,28 @@ import wilbert.com.travelalbum.R;
  */
 public class TravelItemAdapter extends RecyclerView.Adapter<TravelItemAdapter.ViewHolder>{
     private IOnItemClick iOnItemClick;
+    private IOnItemLongClick iOnItemLongClick;
     private List travelItemList;
     private Context context;
+
+    public interface IOnItemClick {
+        void onItemClick(View view);
+    }
+
+    public interface IOnItemLongClick {
+        void onItemLongClick(View view);
+    }
     public void setDataSet(List newDataSet) {
         this.travelItemList = newDataSet;
     }
     public List getTravelItemList() {
         return travelItemList;
     }
-    public TravelItemAdapter(Context context, List travelItemList, IOnItemClick iOnItemClick) {
+    public TravelItemAdapter(Context context, List travelItemList, IOnItemClick iOnItemClick
+                        ,IOnItemLongClick iOnItemLongClick) {
         this.travelItemList = travelItemList;
         this.iOnItemClick = iOnItemClick;
+        this.iOnItemLongClick = iOnItemLongClick;
         this.context = context;
     }
 
@@ -45,6 +56,15 @@ public class TravelItemAdapter extends RecyclerView.Adapter<TravelItemAdapter.Vi
                 @Override
                 public void onClick(View v) {
                     iOnItemClick.onItemClick(view);
+                }
+            });
+        }
+        if (iOnItemLongClick != null) {
+            viewHolder.view.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    iOnItemLongClick.onItemLongClick(v);
+                    return false;
                 }
             });
         }
@@ -66,9 +86,6 @@ public class TravelItemAdapter extends RecyclerView.Adapter<TravelItemAdapter.Vi
         return travelItemList.size();
     }
 
-    public interface IOnItemClick {
-        void onItemClick(View view);
-    }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         public View view;

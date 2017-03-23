@@ -64,12 +64,22 @@ public class Travel implements Parcelable{
     private String title;
     private String time;
     private String status;
+
+    public String getTime() {
+        return time;
+    }
+
+    public void setTime(String time) {
+        this.time = time;
+    }
+
     public Travel(String user_id, String title) {
         this.user_id = user_id;
         this.title = title;
         id = UUID.randomUUID().toString().replaceAll("-", "");
         DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         time = format.format(new Date());
+
     }
 
     public Travel(String id, String user_id, String title, String time) {
@@ -149,5 +159,9 @@ public class Travel implements Parcelable{
         map.put("title", title == null ? "":title);
         map.put("time", time == null ? "":time);
         return map;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
     }
 }

@@ -1,5 +1,7 @@
 package model;
 
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.util.Log;
 
 import org.json.JSONException;
@@ -17,7 +19,7 @@ import util.LogUti;
 /**
  * Created by wilbert on 2016/11/29.
  */
-public class TravelItem {
+public class TravelItem implements Parcelable{
     private String id;
     private String travel_id;
 
@@ -100,6 +102,26 @@ public class TravelItem {
         return result;
     }
 
+    public void setTime(String time) {
+        this.time = time;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
+    }
+
+    public String getTravelItemUpdateSql() {
+        String sql = "update tb_travel_item SET description = '%s', image = '%s', time = '%s' " +
+                "where id = '%s'";
+        String result =  String.format(sql, description, image, time, id);
+        LogUti.d("update travel:" + result);
+        return result;
+    }
+
     public Map getMap() {
         Map map = new HashMap<String, String>();
         map.put("id", id == null ? "" : id);
@@ -123,4 +145,38 @@ public class TravelItem {
                                         id, travel_id, image, description);
         return result;
     }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(id);
+        dest.writeString(travel_id);
+        dest.writeString(description);
+        dest.writeString(image);
+        dest.writeString(time);
+        dest.writeString(status);
+    }
+    protected TravelItem(Parcel in) {
+        id = in.readString();
+        travel_id = in.readString();
+        description = in.readString();
+        image = in.readString();
+        time = in.readString();
+        status = in.readString();
+    }
+    public static final Creator<TravelItem> CREATOR = new Creator<TravelItem>() {
+        @Override
+        public TravelItem createFromParcel(Parcel in) {
+            return new TravelItem(in);
+        }
+
+        @Override
+        public TravelItem[] newArray(int size) {
+            return new TravelItem[size];
+        }
+    };
 }

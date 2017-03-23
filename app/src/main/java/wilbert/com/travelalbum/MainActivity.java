@@ -28,7 +28,10 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -58,6 +61,51 @@ public class MainActivity extends AppCompatActivity {
             Intent intent = new Intent(MainActivity.this, TravelDetail.class);
             intent.putExtras(bundle);
             startActivity(intent);
+        }
+    };
+
+    TravelAdapter.IOnItemLongClick iOnItemLongClick = new TravelAdapter.IOnItemLongClick() {
+        @Override
+        public void onItemLongClick(View view) {
+            int itemPosition = recyclerView.getChildLayoutPosition(view);
+            LogUti.d(String.format("itemPosition:%d", itemPosition));
+            final Travel travel = (Travel) travelList.get(itemPosition);
+            titleEditText = new EditText(MainActivity.this);
+            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this).
+                    setTitle("修改标题")
+                    .setIcon(android.R.drawable.ic_dialog_info)
+                    .setView(titleEditText)
+                    .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            String input = titleEditText.getText().toString();
+                            if (input.equals("")) {
+                                Toast.makeText(getApplicationContext(), "标题内容不能为空！" + input, Toast.LENGTH_LONG).show();
+                            }
+                            else {
+                                travel.setTitle(input);
+                                DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                                String time = format.format(new Date());
+                                travel.setTime(time);
+                                database.execSQL(travel.getTravelUpdateSql());
+
+                                StringRequest stringRequest = new StringRequest(Request.Method.POST,
+                                        CustomConstans.url + "Travel/update",responseListener,
+                                        errorListener) {
+                                    @Override
+                                    protected Map<String, String> getParams() throws AuthFailureError {
+                                        return travel.getMap();
+                                    }
+                                };
+                                requestQueue.add(stringRequest);
+
+                                Toast.makeText(getApplicationContext(), "旅途开始！" + input, Toast.LENGTH_LONG).show();
+                                travelAdapter.setDataSet(readTravelListFromSql());
+                                travelAdapter.notifyDataSetChanged();
+                            }
+                        }
+                    })
+                    .setNegativeButton("取消", null);
+            builder.show();
         }
     };
 
@@ -96,7 +144,7 @@ public class MainActivity extends AppCompatActivity {
         recyclerView = (RecyclerView)findViewById(R.id.travelRecyclerView);
         recyclerView.setLayoutManager(layoutManager);
 
-        travelAdapter = new TravelAdapter(readTravelListFromSql(), iOnItemClick);
+        travelAdapter = new TravelAdapter(readTravelListFromSql(), iOnItemClick, iOnItemLongClick);
         recyclerView.setAdapter(travelAdapter);
 
         ItemTouchHelper itemTouchHelper = new ItemTouchHelper(callback);

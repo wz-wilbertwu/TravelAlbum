@@ -1,5 +1,6 @@
 package wilbert.com.travelalbum;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -10,6 +11,7 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.content.FileProvider;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -41,6 +43,8 @@ import util.CustomConstans;
 import util.LogUti;
 
 public class TravelDetail extends AppCompatActivity {
+    public static final String TRAVEL_ITEM_KEY = "travel_item_key";
+
     private Travel travel;
     private SQLiteDatabase database;
     private RecyclerView.LayoutManager layoutManager;
@@ -50,7 +54,37 @@ public class TravelDetail extends AppCompatActivity {
     private TravelItemAdapter.IOnItemClick iOnItemClick = new TravelItemAdapter.IOnItemClick() {
         @Override
         public void onItemClick(View view) {
+            int itemPosition = recyclerView.getChildLayoutPosition(view);
+            TravelItem travelItem = (TravelItem) travelItemAdapter.getTravelItemList().get(itemPosition);
+            Intent intent = new Intent(TravelDetail.this, TravelItemDetail.class);
+            intent.putExtra(TravelItemDetail.EDITABLE_FLAG, "false");
+            Bundle bundle = new Bundle();
+            bundle.putParcelable(TRAVEL_ITEM_KEY, travelItem);
+            intent.putExtras(bundle);
+            startActivity(intent);
+        }
+    };
 
+    private TravelItemAdapter.IOnItemLongClick iOnItemLongClick = new TravelItemAdapter.IOnItemLongClick() {
+        @Override
+        public void onItemLongClick(View view) {
+            int itemPosition = recyclerView.getChildLayoutPosition(view);
+            final TravelItem travelItem = (TravelItem) travelItemAdapter.getTravelItemList().get(itemPosition);
+            AlertDialog.Builder builder = new AlertDialog.Builder(TravelDetail.this);
+            CharSequence[] charSequences = new CharSequence[]{"修改"};
+            builder.setTitle("操作")
+                    .setItems(charSequences, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            Intent intent = new Intent(TravelDetail.this, TravelItemDetail.class);
+                            intent.putExtra(TravelItemDetail.EDITABLE_FLAG, "true");
+                            Bundle bundle = new Bundle();
+                            bundle.putParcelable(TRAVEL_ITEM_KEY, travelItem);
+                            intent.putExtras(bundle);
+                            startActivity(intent);
+                        }
+                    });
+            builder.create().show();
         }
     };
 
@@ -72,7 +106,7 @@ public class TravelDetail extends AppCompatActivity {
         recyclerView = (RecyclerView)findViewById(R.id.travelItemRecyclerView);
         recyclerView.setLayoutManager(layoutManager);
 
-        travelItemAdapter = new TravelItemAdapter(this, readTravelItemListFromSql(), iOnItemClick);
+        travelItemAdapter = new TravelItemAdapter(this, readTravelItemListFromSql(), iOnItemClick, iOnItemLongClick);
         recyclerView.setAdapter(travelItemAdapter);
 
         ItemTouchHelper itemTouchHelper = new ItemTouchHelper(callback);
@@ -91,7 +125,7 @@ public class TravelDetail extends AppCompatActivity {
 
     @Override
     protected void onResume() {
-        travelItemAdapter = new TravelItemAdapter(this, readTravelItemListFromSql(), iOnItemClick);
+        travelItemAdapter = new TravelItemAdapter(this, readTravelItemListFromSql(), iOnItemClick, iOnItemLongClick);
         recyclerView.setAdapter(travelItemAdapter);
         super.onResume();
     }
@@ -128,6 +162,8 @@ public class TravelDetail extends AppCompatActivity {
             Intent intent = new Intent(this, TravelItemDetail.class);
             intent.putExtra(TRAVEL_ID, travel.getId());
             intent.putExtra(IMG, imageString);
+            intent.putExtra(TravelItemDetail.EDITABLE_FLAG, "true");
+            intent.putExtra(TravelItemDetail.XINZEN_FLAG, "true");
             intent.putExtras(bundle);
             startActivity(intent);
         }

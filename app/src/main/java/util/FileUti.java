@@ -31,4 +31,12 @@ public class FileUti {
             e.printStackTrace();
         }
     }
+
+    public static File getTheFile(String fileName) {
+        File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_PICTURES), "TravelAlbum");
+        File mediaFile = new File(mediaStorageDir.getPath() + File.separator +
+                fileName);
+        return mediaFile;
+    }
 }
