@@ -55,6 +55,8 @@ public class TravelItemDetail extends AppCompatActivity {
             TravelItem travelItem = new TravelItem(response);
             if (travelItem != null && travelItem.getStatus() != null && travelItem.getStatus().equals("succ")) {
                 LogUti.d("操作成功：" + response);
+                String sql = travelItem.getTravelItemUpdateStateSql();
+                dataBaseManager.execSQL(sql);
             } else {
                 LogUti.d("操作失败：" + response);
             }
@@ -93,7 +95,6 @@ public class TravelItemDetail extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == AppUtil.REQUEST_TAKE_PHOTO && resultCode == RESULT_OK) {
             imageView.setImageBitmap(BitmapUti.getBitmapFromUri(this, photoUri, 200));
-            //TODO GET IMAGE STRING
             String filePath = file.getPath();
             imageString = filePath.substring(filePath.lastIndexOf(File.separator)+1);
         }
@@ -137,7 +138,6 @@ public class TravelItemDetail extends AppCompatActivity {
         if (isEditable) {
             descriptionEditText.setEnabled(true);
             imageView.setClickable(true);
-//            TODO 设置image可编辑
         } else {
             descriptionEditText.setEnabled(false);
             imageView.setClickable(false);

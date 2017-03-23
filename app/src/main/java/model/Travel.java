@@ -29,12 +29,16 @@ public class Travel implements Parcelable{
 
     private String id;
 
+    private String operation;
+
     protected Travel(Parcel in) {
         user_id = in.readString();
         id = in.readString();
         title = in.readString();
         time = in.readString();
         status = in.readString();
+        state = in.readString();
+        operation = in.readString();
     }
 
     public static final Creator<Travel> CREATOR = new Creator<Travel>() {
@@ -63,7 +67,13 @@ public class Travel implements Parcelable{
 
     private String title;
     private String time;
-    private String status;
+    private String status;//status 指的是网络状态的succ或者fail
+    private String state;
+    //state 数据的当前状态
+    // 0：本地新增
+    // -1：标记删除
+    // 1：本地更新
+    // 9：已经同步
 
     public String getTime() {
         return time;
@@ -79,7 +89,7 @@ public class Travel implements Parcelable{
         id = UUID.randomUUID().toString().replaceAll("-", "");
         DateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         time = format.format(new Date());
-
+        state = "0";
     }
 
     public Travel(String id, String user_id, String title, String time) {
@@ -87,6 +97,7 @@ public class Travel implements Parcelable{
         this.user_id = user_id;
         this.title = title;
         this.time = time;
+        this.state = "0";
     }
 
     public Travel(String jsonString) {
@@ -97,19 +108,33 @@ public class Travel implements Parcelable{
             title = jsonObject.getString("title");
             time = jsonObject.getString("time");
             status = jsonObject.getString("status");
+            operation = jsonObject.getString("operation");
         } catch (JSONException e) {
             e.printStackTrace();
         }
     }
     public  String getTravelInsertSql() {
-        String sql = "INSERT INTO tb_travel (id, user_id, time, title) " +
-                "VALUES (\"%s\", \"%s\", \"%s\", \"%s\")";
-        String result =  String.format(sql, id, user_id, time, title);
+        state = "0";
+        String sql = "INSERT INTO tb_travel (id, user_id, time, title, state) " +
+                "VALUES (\"%s\", \"%s\", \"%s\", \"%s\", \"%s\")";
+        String result =  String.format(sql, id, user_id, time, title, state);
         LogUti.d("insert travel:" + result);
         return result;
     }
 
+    public String getTravelMarkRemoveSql() {
+        state = "-1";
+        /*String sql = "delete from tb_travel where id = '%s'";
+        String result =  String.format(sql, id);*/
+        String sql = "update tb_travel SET state = '%s'" +
+                "where id = '%s'";
+        String result =  String.format(sql, state, id);
+        LogUti.d("remove travel:" + result);
+        return result;
+    }
+
     public String getTravelRemoveSql() {
+        state = "-1";
         String sql = "delete from tb_travel where id = '%s'";
         String result =  String.format(sql, id);
         LogUti.d("remove travel:" + result);
@@ -117,9 +142,10 @@ public class Travel implements Parcelable{
     }
 
     public String getTravelUpdateSql() {
-        String sql = "update tb_travel SET title = '%s', time = '%s' " +
+        state = "1";
+        String sql = "update tb_travel SET title = '%s', time = '%s', state = '%s'" +
                 "where id = '%s'";
-        String result =  String.format(sql, title, time, id);
+        String result =  String.format(sql, title, time, state, id);
         LogUti.d("update travel:" + result);
         return result;
     }
@@ -138,6 +164,14 @@ public class Travel implements Parcelable{
         return result;
     }
 
+    public String getTravelUpdateStateSql() {
+        state = "9";
+        String sql = "update tb_travel SET state = '%s'" +
+                "where id = '%s'";
+        String result =  String.format(sql, state, id);
+        return result;
+    }
+
     @Override
     public int describeContents() {
         return 0;
@@ -150,6 +184,8 @@ public class Travel implements Parcelable{
         dest.writeString(title);
         dest.writeString(time);
         dest.writeString(status);
+        dest.writeString(state);
+        dest.writeString(operation);
     }
 
     public Map getMap() {
@@ -163,5 +199,13 @@ public class Travel implements Parcelable{
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public String getOperation() {
+        return operation;
+    }
+
+    public void setOperation(String operation) {
+        this.operation = operation;
     }
 }

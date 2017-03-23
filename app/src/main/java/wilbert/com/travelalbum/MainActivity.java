@@ -9,12 +9,8 @@ import android.graphics.Canvas;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.view.menu.MenuAdapter;
-import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.OrientationHelper;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.View;
 import android.widget.EditText;
@@ -115,6 +111,13 @@ public class MainActivity extends AppCompatActivity {
             Travel travel = new Travel(response);
             if (travel != null && travel.getStatus() != null && travel.getStatus().equals("succ")) {
                 LogUti.d("操作成功：" + response);
+                String sql = null;
+                if (travel.getOperation().equals("D")) {
+                    sql = travel.getTravelRemoveSql();
+                } else {
+                    sql = travel.getTravelUpdateStateSql();
+                }
+                database.execSQL(sql);
             } else {
                 LogUti.d("操作失败：" + response);
             }
@@ -196,7 +199,7 @@ public class MainActivity extends AppCompatActivity {
 
     private List readTravelListFromSql() {
         travelList = new ArrayList();
-        String sql = String.format("select * from tb_travel where user_id = '%s'", user.getId());
+        String sql = String.format("select * from tb_travel where user_id = '%s' and state != '-1'", user.getId());
         Cursor cursor = database.rawQuery(sql, null);
         while (cursor.moveToNext()) {
             String id = cursor.getString(cursor.getColumnIndex("id"));
@@ -220,7 +223,7 @@ public class MainActivity extends AppCompatActivity {
         public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
             int position = viewHolder.getAdapterPosition();
             Travel travel = (Travel) travelAdapter.getTravelList().get(position);
-            String sql = travel.getTravelRemoveSql();
+            String sql = travel.getTravelMarkRemoveSql();
             database.execSQL(sql);
             travelAdapter.getTravelList().remove(position);
             travelAdapter.notifyItemRemoved(position);

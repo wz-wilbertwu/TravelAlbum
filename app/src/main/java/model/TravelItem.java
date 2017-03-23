@@ -46,7 +46,15 @@ public class TravelItem implements Parcelable{
     private String description;
     private String image;
     private String time;
-    private String status;
+    private String status;//status 指的是网络状态的succ或者fail
+
+    private String state;
+    //state 数据的当前状态
+    // 0：本地新增
+    // -1：标记删除
+    // 1：本地更新
+    // 9：已经同步
+
     public TravelItem(String travel_id, String description, String image) {
         this.travel_id = travel_id;
         this.description = description;
@@ -88,9 +96,10 @@ public class TravelItem implements Parcelable{
     }
 
     public String getTravelItemInsertSql() {
-        String sql = "INSERT INTO tb_travel_item (id, travel_id, description, time, image) " +
-                "VALUES ('%s', '%s', '%s', '%s', '%s')";
-        String result = String.format(sql, id, travel_id, description, time, image);
+        state = "0";
+        String sql = "INSERT INTO tb_travel_item (id, travel_id, description, time, image, state) " +
+                "VALUES ('%s', '%s', '%s', '%s', '%s', '%s')";
+        String result = String.format(sql, id, travel_id, description, time, image, state);
         LogUti.d("insert travel item:" + result);
         return result;
     }
@@ -98,6 +107,16 @@ public class TravelItem implements Parcelable{
     public String getTravelItemRemoveSql() {
         String sql = "delete from tb_travel_item where id = '%s'";
         String result =  String.format(sql, id);
+        LogUti.d("remove travel item:" + result);
+        return result;
+    }
+    public String getTravelItemMarkRemoveSql() {
+        state = "-1";
+        /*String sql = "delete from tb_travel_item where id = '%s'";
+        String result =  String.format(sql, id);*/
+        String sql = "update tb_travel_item SET state = '%s'" +
+                "where id = '%s'";
+        String result =  String.format(sql, state, id);
         LogUti.d("remove travel item:" + result);
         return result;
     }
@@ -115,6 +134,7 @@ public class TravelItem implements Parcelable{
     }
 
     public String getTravelItemUpdateSql() {
+        state = "1";
         String sql = "update tb_travel_item SET description = '%s', image = '%s', time = '%s' " +
                 "where id = '%s'";
         String result =  String.format(sql, description, image, time, id);
@@ -133,9 +153,17 @@ public class TravelItem implements Parcelable{
     }
 
     public static String getTravelItemQueryAllSql(String travel_id) {
-        String sql = "select * from tb_travel_item where travel_id = '%s'";
+        String sql = "select * from tb_travel_item where travel_id = '%s' and state != '-1'";
         String result = String.format(sql, travel_id);
         LogUti.d("query all travel item:" + result);
+        return result;
+    }
+
+    public String getTravelItemUpdateStateSql() {
+        state = "9";
+        String sql = "update tb_travel_item SET state = '%s'" +
+                "where id = '%s'";
+        String result =  String.format(sql, state, id);
         return result;
     }
 

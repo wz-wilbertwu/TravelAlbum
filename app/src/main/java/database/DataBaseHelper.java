@@ -14,7 +14,8 @@ public class DataBaseHelper extends SQLiteOpenHelper {
             "id  TEXT(36)," +
             "user_id  TEXT(36) NOT NULL," +
             "time  TEXT(100)," +
-            "title  TEXT(255) NOT NULL" +
+            "title  TEXT(255) NOT NULL," +
+            "state TEXT(10) NOT NULL" +
             ")";
     public static final String CREATE_TRAVEL_ITEM = "CREATE TABLE tb_travel_item (" +
             "id  TEXT(36) NOT NULL," +
@@ -23,6 +24,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
             "time  TEXT(255)," +
             "title  TEXT(100)," +
             "image  TEXT(255)," +
+            "state TEXT(10) NOT NULL," +
             "PRIMARY KEY (id))";
     private Context context;
 
