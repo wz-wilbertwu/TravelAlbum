@@ -280,6 +280,7 @@ public class MainActivity extends AppCompatActivity {
                 TravelItem travel = new TravelItem(response);
                 database.execSQL(travel.getTravelItemUpdateStateSql());
                 LogUti.d(response);
+
             }
         };
         Response.ErrorListener errorListener = new Response.ErrorListener() {
