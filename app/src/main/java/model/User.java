@@ -77,10 +77,10 @@ public class User {
 
     public Map getMap(){
         Map map = new HashMap<String,String>();
-        map.put("name", name == null ? "" : name);
+        map.put("username", name == null ? "" : name);
         map.put("password", password == null ? "" : password);
-        map.put("id", id == null ? "": id);
-        map.put("status", status == null ? "" : status);
+        /*map.put("id", id == null ? "": id);
+        map.put("status", status == null ? "" : status);*/
         return map;
     }
 

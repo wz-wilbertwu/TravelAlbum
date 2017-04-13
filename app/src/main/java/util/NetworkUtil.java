@@ -20,7 +20,6 @@ import okhttp3.Response;
  * Created by wilbert on 2017/3/21.
  */
 public class NetworkUtil {
-    private static final MediaType MEDIA_TYPE_PNG = MediaType.parse("image/png");
     private static OkHttpClient client = new OkHttpClient();
 
     public interface NetworkCallBack {

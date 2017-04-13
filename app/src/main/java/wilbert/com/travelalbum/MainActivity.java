@@ -28,6 +28,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -46,6 +47,7 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private TravelAdapter travelAdapter;
     private EditText titleEditText;
+    private String cookie;
 
     TravelAdapter.IOnItemClick iOnItemClick = new TravelAdapter.IOnItemClick() {
         @Override
@@ -137,6 +139,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         String userMessage = getIntent().getStringExtra(LoginActivity.USERMESSAGE);
+        cookie = getIntent().getStringExtra("Cookie");
         LogUti.d("userMessage:" + userMessage);
         user = User.getUserFromJson(userMessage);
         DataBaseHelper helper = new DataBaseHelper(this, "TravelAlbum.db", null, 2);
@@ -180,6 +183,13 @@ public class MainActivity extends AppCompatActivity {
                                         @Override
                                         protected Map<String, String> getParams() throws AuthFailureError {
                                             return travel.getMap();
+                                        }
+
+                                        @Override
+                                        public Map<String, String> getHeaders() throws AuthFailureError {
+                                            Map<String, String> headers = new HashMap<String, String>();
+                                            headers.put("Cookie", cookie);
+                                            return headers;
                                         }
                                     };
                                     requestQueue.add(stringRequest);

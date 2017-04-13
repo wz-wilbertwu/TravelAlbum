@@ -20,5 +20,6 @@
     android:layout_gravity="bottom|right"
     android:layout_height="wrap_content"
     android:layout_alignParentBottom="true"
-    android:layout_alignEnd="@+id/travelRecyclerView" />
+    android:layout_alignEnd="@+id/travelRecyclerView"
+    android:src="@drawable/ic_library_add_black_24dp"/>
 </RelativeLayout>

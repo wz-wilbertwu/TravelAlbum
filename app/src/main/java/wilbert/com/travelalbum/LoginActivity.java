@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import model.SessionRequest;
 import model.User;
 import util.CustomConstans;
 import util.LogUti;
@@ -35,6 +36,7 @@ public class LoginActivity extends AppCompatActivity {
     EditText passwordEditText;
     EditText nameEditText;
     RequestQueue requestQueue;
+    String cookie;
     public static final String USERMESSAGE = "USERMESSAGE";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,7 +79,34 @@ public class LoginActivity extends AppCompatActivity {
 
     private void LoginUser(final String name, final String password) {
         final User user = new User(name, password);
-        StringRequest stringRequest = new StringRequest(Request.Method.POST,
+        SessionRequest sessionRequest = new SessionRequest(CustomConstans.url + "login",
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        try {
+                            JSONObject jsonObject = new JSONObject(response);
+                            cookie = jsonObject.getString("Cookie");
+                            String data = jsonObject.getString("Data");
+                            if (data.indexOf("Hello") != -1) {
+                                Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                                intent.putExtra(USERMESSAGE, response);
+                                intent.putExtra("Cookie", cookie);
+                                startActivity(intent);
+                            } else  {
+                                Toast.makeText(LoginActivity.this, "密码错误", Toast.LENGTH_SHORT).show();
+                            }
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Toast.makeText(LoginActivity.this, "服务器错误", Toast.LENGTH_SHORT).show();
+            }
+        }, user.getMap());
+        requestQueue.add(sessionRequest);
+/*        StringRequest stringRequest = new StringRequest(Request.Method.POST,
                 CustomConstans.url + "User/login",
                 new Response.Listener<String>() {
                     @Override
@@ -104,7 +133,8 @@ public class LoginActivity extends AppCompatActivity {
                 return user.getMap();
             }
         };
-        requestQueue.add(stringRequest);
+        requestQueue.add(stringRequest);*/
+
     }
 
     private void registerUser(String name, String password) {
