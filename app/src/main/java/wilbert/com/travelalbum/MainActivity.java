@@ -315,7 +315,8 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onResponse(okhttp3.Response response) {
                         try{
-                            LogUti.d(response.body().string());}
+                            LogUti.d(response.body().string());
+                        }
                         catch (IOException e) {
                             e.printStackTrace();
                         }
