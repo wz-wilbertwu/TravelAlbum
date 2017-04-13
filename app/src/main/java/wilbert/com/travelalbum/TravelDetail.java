@@ -138,7 +138,7 @@ public class TravelDetail extends AppCompatActivity {
             String id = cursor.getString(cursor.getColumnIndex("id"));
             String travel_id = cursor.getString(cursor.getColumnIndex("travel_id"));
             String description = cursor.getString(cursor.getColumnIndex("description"));
-            String time = cursor.getInt(cursor.getColumnIndex("time")) + "";
+            String time = cursor.getString(cursor.getColumnIndex("time"));
             String image = cursor.getString(cursor.getColumnIndex("image"));
             TravelItem travelItem = new TravelItem(id, travel_id, description, image, time);
             travelItemList.add(travelItem);

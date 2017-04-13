@@ -1,6 +1,8 @@
 package wilbert.com.travelalbum;
 
+import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
@@ -49,6 +51,13 @@ public class LoginActivity extends AppCompatActivity {
 
         loginBtn.setOnClickListener(onClickListener);
         registerBtn.setOnClickListener(onClickListener);
+
+        SharedPreferences sharedPreferences= getSharedPreferences("UserMessage",
+                Activity.MODE_PRIVATE);
+        String name=sharedPreferences.getString("NAME","");
+        String password=sharedPreferences.getString("PASSWORD","");
+        nameEditText.setText(name);
+        passwordEditText.setText(password);
     }
 
     private View.OnClickListener onClickListener = new View.OnClickListener() {
@@ -86,6 +95,13 @@ public class LoginActivity extends AppCompatActivity {
                         if (user1.getStatus() != null && user1.getStatus().equals("succ")) {
                             Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                             intent.putExtra(USERMESSAGE, response);
+                            SharedPreferences sharedPreferences= getSharedPreferences("UserMessage",
+                                    Activity.MODE_PRIVATE);
+                            //实例化SharedPreferences.Editor对象
+                            SharedPreferences.Editor editor = sharedPreferences.edit();
+                            editor.putString("NAME", user1.getName());
+                            editor.putString("PASSWORD", user1.getPassword());
+                            editor.apply();
                             startActivity(intent);
                         } else {
                             Toast.makeText(LoginActivity.this, "密码错误", Toast.LENGTH_SHORT).show();

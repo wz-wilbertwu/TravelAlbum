@@ -28,6 +28,7 @@ import java.util.Map;
 
 import database.DataBaseManager;
 import model.TravelItem;
+import model.VolleySingleton;
 import util.AppUtil;
 import util.BitmapUti;
 import util.CustomConstans;
@@ -188,15 +189,18 @@ public class TravelItemDetail extends AppCompatActivity {
                             return travelItem.getMap();
                         }
                     };
-                    requestQueue.add(stringRequest);
+                    VolleySingleton.getInstance(TravelItemDetail.this.getApplicationContext())
+                            .addToRequestQueue(stringRequest);
+                    /*requestQueue.add(stringRequest);*/
 
                     NetworkUtil.upload(file.getName(), file, new NetworkUtil.NetworkCallBack() {
                         @Override
                         public void onResponse(okhttp3.Response response) {
                             LogUti.d("upload response");
-                            finish();
+                            /*finish();*/
                         }
                     });
+                    finish();
                 } else {
 //                    不可编辑
                 }

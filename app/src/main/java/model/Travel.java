@@ -99,6 +99,13 @@ public class Travel implements Parcelable{
         this.time = time;
         this.state = "0";
     }
+    public Travel(String id, String user_id, String title, String time, String state) {
+        this.id = id;
+        this.user_id = user_id;
+        this.title = title;
+        this.time = time;
+        this.state = state;
+    }
 
     public Travel(String jsonString) {
         try {

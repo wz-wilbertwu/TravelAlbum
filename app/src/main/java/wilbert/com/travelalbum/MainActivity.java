@@ -12,6 +12,9 @@ import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -24,6 +27,8 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
+import java.io.File;
+import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -34,9 +39,13 @@ import java.util.Map;
 import adapter.TravelAdapter;
 import database.DataBaseHelper;
 import model.Travel;
+import model.TravelItem;
 import model.User;
+import model.VolleySingleton;
 import util.CustomConstans;
+import util.FileUti;
 import util.LogUti;
+import util.NetworkUtil;
 
 public class MainActivity extends AppCompatActivity {
     public static final String TRAVEL_KEY = "travel_key";
@@ -153,8 +162,8 @@ public class MainActivity extends AppCompatActivity {
         ItemTouchHelper itemTouchHelper = new ItemTouchHelper(callback);
         itemTouchHelper.attachToRecyclerView(recyclerView);
 
-        requestQueue = Volley.newRequestQueue(this);
-
+        /*requestQueue = Volley.newRequestQueue(this);*/
+        requestQueue = VolleySingleton.getInstance(this).getRequestQueue();
         FloatingActionButton btn = (FloatingActionButton)findViewById(R.id.addTravelBtn);
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -245,4 +254,107 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     };
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.mainmenu, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        List<Travel> notSyncTravelList = readNotSyncTravelFromSql();
+        List<TravelItem> notSyncTravelItemList = readNotSyncTravelItemFromSql();
+        Response.Listener<String> syncTravelListener = new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                Travel travel = new Travel(response);
+                database.execSQL(travel.getTravelUpdateStateSql());
+                LogUti.d(response);
+            }
+        };
+        Response.Listener<String> syncTravelItemListener = new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                TravelItem travel = new TravelItem(response);
+                database.execSQL(travel.getTravelItemUpdateStateSql());
+                LogUti.d(response);
+            }
+        };
+        Response.ErrorListener errorListener = new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                LogUti.d(error.toString());
+            }
+        };
+        if (notSyncTravelList.size() != 0) {
+            for (final Travel travel:notSyncTravelList) {
+                StringRequest stringRequest = new StringRequest(Request.Method.POST,
+                        CustomConstans.url + "sync/travel", syncTravelListener, errorListener){
+                    @Override
+                    protected Map<String, String> getParams() throws AuthFailureError {
+                        return travel.getMap();
+                    }
+                };
+                requestQueue.add(stringRequest);
+            }
+        }
+        if (notSyncTravelItemList.size() != 0) {
+            for (final TravelItem travelItem: notSyncTravelItemList) {
+                StringRequest stringRequest = new StringRequest(Request.Method.POST,
+                        CustomConstans.url + "sync/travelItem", syncTravelItemListener, errorListener) {
+                    @Override
+                    protected Map<String, String> getParams() throws AuthFailureError {
+                        return travelItem.getMap();
+                    }
+                };
+                requestQueue.add(stringRequest);
+                File file = FileUti.getTheFile(travelItem.getImage());
+                NetworkUtil.upload(file.getName(), file, new NetworkUtil.NetworkCallBack() {
+                    @Override
+                    public void onResponse(okhttp3.Response response) {
+                        try{
+                            LogUti.d(response.body().string());}
+                        catch (IOException e) {
+                            e.printStackTrace();
+                        }
+
+                    }
+                });
+            }
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private List<Travel> readNotSyncTravelFromSql() {
+        List<Travel>notSyncTravelList = new ArrayList();
+        String sql = String.format("select * from tb_travel t where t.state != '9'");
+        Cursor cursor = database.rawQuery(sql, null);
+        while (cursor.moveToNext()) {
+            String id = cursor.getString(cursor.getColumnIndex("id"));
+            String user_id = cursor.getString(cursor.getColumnIndex("user_id"));
+            String time = cursor.getString(cursor.getColumnIndex("time"));
+            String title = cursor.getString(cursor.getColumnIndex("title"));
+            String state = cursor.getString(cursor.getColumnIndex("state"));
+            Travel travel = new Travel(id,user_id, title, time, state);
+            notSyncTravelList.add(travel);
+        }
+        return notSyncTravelList;
+    }
+    private List<TravelItem> readNotSyncTravelItemFromSql() {
+        List<TravelItem> notSyncTravelItemList = new ArrayList();
+        String sql = "select * from tb_travel_item t where t.state != '9'";
+        Cursor cursor = database.rawQuery(sql, null);
+        while (cursor.moveToNext()) {
+            String id = cursor.getString(cursor.getColumnIndex("id"));
+            String travel_id = cursor.getString(cursor.getColumnIndex("travel_id"));
+            String description = cursor.getString(cursor.getColumnIndex("description"));
+            String time = cursor.getString(cursor.getColumnIndex("time"));
+            String image = cursor.getString(cursor.getColumnIndex("image"));
+            TravelItem travelItem = new TravelItem(id, travel_id, description, image, time);
+            notSyncTravelItemList.add(travelItem);
+        }
+        return notSyncTravelItemList;
+    }
 }

@@ -20,5 +20,6 @@
         android:layout_gravity="bottom|right"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
+        android:src="@drawable/ic_note_add_black_24dp"
         android:layout_alignParentEnd="true" />
 </RelativeLayout>
